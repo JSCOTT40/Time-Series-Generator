@@ -1,101 +1,250 @@
-# Time Series Generator and Filter Tool
-Summary of Skills Learned Through PHYS 4060: Time series and Spectral Analysis, the code is being improved through a more interactive interface using pyQt5 however the overall mathematics and function of what is to be done remains the same. 
+# Time Series Generator and FFT Filter
 
-This Python script allows you to generate, visualize, and apply frequency-based filters to synthetic time series data. The tool is interactive, prompting the user for input parameters to define the characteristics of the time series, including frequencies, amplitudes, phases, and noise levels. Additionally, it provides options for filtering the time series using high-pass, low-pass, and band-pass filters.
+A Python/Jupyter Notebook project for generating synthetic time-series signals made from multiple sinusoidal components, adding optional white noise, and applying frequency-domain filters using the Fast Fourier Transform.
+
+This project demonstrates basic signal generation, spectral analysis, and digital filtering concepts using `NumPy` and `Matplotlib`.
+
+---
+
+## Overview
+
+This notebook allows the user to build a custom time-series signal by choosing:
+
+* Number of sinusoidal components
+* Start and end time
+* Frequencies
+* Amplitudes
+* Phases
+* Optional white noise
+
+After generating the signal, the notebook displays the data in both the time domain and frequency domain. The user can then apply different FFT-based filters to modify the signal.
+
+---
 
 ## Features
 
-Time Series Generation:
-- Customize the number of sinusoidal components.
-- Specify or randomize frequencies, amplitudes, and phases.
-- Add white noise with configurable bounds.
+* Generate a time-series from multiple sine waves
+* Choose random, preset, or manual values for:
 
-Visualization:
-- Plot the time series in the time domain.
-- Compute and plot the Power Spectral Density (PSD) in the frequency domain.
+  * Frequency
+  * Amplitude
+  * Phase
+* Add optional white noise
+* Plot the generated signal in the time domain
+* Compute and plot the power spectral density
+* Apply custom frequency-domain filters:
 
-Filtering Options:
-- Apply high-pass, low-pass, and band-pass filters with user-defined cutoff frequencies.
-- Visualize the effects of filters in both time and frequency domains.
+  * High-pass filter
+  * Low-pass filter
+  * Band-pass filter
+* Reset the filtered signal back to the original signal
+* Compare original and filtered signals visually
 
-### Dependencies
+---
 
-Ensure you have the following Python libraries installed:
-- numpy
-- matplotlib
+## Sampling Configuration
 
-You can install these libraries using pip:
+The notebook uses a fixed sampling interval:
 
-```bash
-pip install numpy matplotlib
-```
-#### Usage
-
-Run the script in a Python environment. The script is interactive and will prompt you to provide inputs for generating the time series and applying filters.
-
-**Example Workflow**:
-
-- Generate a Time Series:
-- Specify the number of sinusoidal components.
-- Choose frequency, amplitude, and phase settings (random, set, or manual).
-- Optionally, add white noise with specified bounds.
-- Visualize the Time Series:
-- View the time series in the time domain.
-- Analyze the frequency domain using PSD plots.
-- Apply Filters:
-- Choose from high-pass, low-pass, or band-pass filters.
-- Specify cutoff frequencies interactively.
-- Compare the original and filtered series visually.
-
-**Example Input and Output:**
-```bash
-How Many Sinusoids are in this Time Series? 5
-What is the Starting Time? 0
-What is the Final Time? 10
-Do you want Random, Set or Manual frequency? Set
-Do you want Random, Set or Manual Amplitude? Set
-Do you want Random, Set or Manual Phase? Set
-Do you want White Noise? Yes
-Do you want Set or Manual White Noise? Set
+```python
+SampF = 0.01
 ```
 
-**Generated plots**:
+This means the time step between samples is:
 
-Time domain representation of the series.
-Frequency domain representation (PSD).
+```text
+Δt = 0.01 seconds
+```
 
-**Filters:**
+This corresponds to a sampling frequency of:
 
-High-Pass Filter:
-Removes frequencies below the specified cutoff.
+```text
+fs = 1 / Δt = 100 Hz
+```
 
-Low-Pass Filter:
-Removes frequencies above the specified cutoff.
+The Nyquist frequency is therefore:
 
-Band-Pass Filter:
-Retains frequencies within a specified range.
+```text
+f_Nyquist = 50 Hz
+```
 
-File Structure
-The script contains the following key components:
+This is why the generated random frequencies are selected between 0 Hz and 50 Hz.
 
-**Functions**:
-- floatcheck(S): Validates float inputs.
-- intcheck(S): Validates integer inputs.
-- Mean(S): Computes the mean of a series.
-- autocov(Series, N, k): Computes autocovariance.
-- PSD(S): Computes the Power Spectral Density (PSD).
+---
 
-**Interactive Inputs**:
+## How It Works
 
-Prompts the user to define time series parameters.
-Filtering and Visualization:
-High-pass, low-pass, and band-pass filter implementations.
-Real-time plots for both time and frequency domains.
+### 1. Input Parameters
 
-License
+The user is prompted to enter the number of sinusoids and the time range for the signal.
 
-This project is open-source and available under the MIT License.
+The notebook then asks whether frequency, amplitude, and phase values should be:
 
-Contribution
+* Randomly generated
+* Automatically set
+* Manually entered
 
-Contributions are welcome! Feel free to fork the repository, submit issues, or create pull requests.
+---
+
+### 2. Signal Generation
+
+Each sinusoidal component is generated using:
+
+```python
+A * sin(2πft + φ)
+```
+
+where:
+
+| Symbol | Meaning   |
+| ------ | --------- |
+| `A`    | Amplitude |
+| `f`    | Frequency |
+| `t`    | Time      |
+| `φ`    | Phase     |
+
+The final signal is built by summing all sinusoidal components together.
+
+Optional white noise can also be added to the generated signal.
+
+---
+
+### 3. Frequency Analysis
+
+The notebook uses the Fast Fourier Transform to analyze the signal in the frequency domain.
+
+The power spectral density is calculated from the FFT result and displayed in decibels:
+
+```python
+psd = abs(fft_series) ** 2 / n
+psd_db = 10 * log10(psd)
+```
+
+This allows the frequency components of the generated signal to be visualized clearly.
+
+---
+
+### 4. Filtering
+
+The notebook supports three main filtering operations.
+
+| Filter Type | Description                               |
+| ----------- | ----------------------------------------- |
+| High-pass   | Attenuates frequencies below a cutoff     |
+| Low-pass    | Attenuates frequencies above a cutoff     |
+| Band-pass   | Keeps frequencies within a selected range |
+
+The filters are applied in the frequency domain by multiplying the FFT of the signal by a custom filter response. The filtered signal is then converted back to the time domain using the inverse FFT.
+
+---
+
+## Example Workflow
+
+1. Run the notebook.
+2. Enter the number of sine waves to generate.
+3. Choose the time range.
+4. Select random, set, or manual parameters.
+5. Add optional white noise.
+6. View the time-domain signal.
+7. View the frequency-domain power spectrum.
+8. Apply a high-pass, low-pass, or band-pass filter.
+9. Compare the original and filtered signals.
+
+---
+
+## Project Structure
+
+```text
+.
+├── Time Series Generator and Filter for Sample rate equal to 0.01.ipynb
+└── README.md
+```
+
+---
+
+## Requirements
+
+This project requires Python 3 and the following libraries:
+
+```text
+numpy
+matplotlib
+jupyter
+```
+
+You can install the dependencies with:
+
+```bash
+pip install numpy matplotlib jupyter
+```
+
+---
+
+## Running the Notebook
+
+Clone the repository:
+
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+```
+
+Navigate into the project folder:
+
+```bash
+cd your-repo-name
+```
+
+Start Jupyter Notebook:
+
+```bash
+jupyter notebook
+```
+
+Then open:
+
+```text
+Time Series Generator and Filter for Sample rate equal to 0.01.ipynb
+```
+
+---
+
+## Educational Purpose
+
+This project was built as a signal-processing exercise to explore:
+
+* Time-series generation
+* Sinusoidal signal construction
+* White noise
+* Fourier transforms
+* Power spectral density
+* Frequency-domain filtering
+* High-pass, low-pass, and band-pass filter behavior
+
+It is intended as a learning project for understanding how signals can be created, analyzed, and filtered using Python.
+
+---
+
+## Possible Improvements
+
+Future improvements could include:
+
+* Refactoring the notebook into reusable Python functions
+* Adding a cleaner user interface
+* Replacing repeated input validation code with helper functions
+* Adding saved output files for generated plots
+* Supporting configurable sampling intervals
+* Adding Butterworth, Chebyshev, or FIR filters
+* Exporting generated time-series data to CSV
+* Adding unit tests for the signal and filter functions
+
+---
+
+## Author
+
+Created by Jayce Scott.
+
+---
+
+## License
+
+This project is open-source and available for educational use.
